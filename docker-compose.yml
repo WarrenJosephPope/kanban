@@ -1,0 +1,38 @@
+services:
+  mongo_db:
+    container_name: db_container
+    restart: unless-stopped
+    image: mongo:latest
+    ports:
+      - "${DB_PORT:-27017}:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    container_name: kanban_backend
+    restart: "unless-stopped"
+    build: 
+      context: "./backend"
+      dockerfile: Dockerfile
+      args:
+        - PORT=${BACKEND_PORT:-8000}
+    volumes:
+      - ./backend:/usr/app/backend
+      - node_modules:/usr/app/backend/node_modules
+    command: > 
+      bash -c "
+        if [ '$APP_ENV' = 'development' ]; then
+          npm run dev;
+        else
+          npm start;
+        fi
+      "
+    environment:
+      - PORT=${BACKEND_PORT}
+      - MONGODB_URI=${MONGODB_URI}
+    depends_on:
+      - mongo_db
+
+volumes:
+  mongo_data: {}
+  node_modules: {}
