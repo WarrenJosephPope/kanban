@@ -18,6 +18,7 @@ export default class Server {
         try {
             await mongoose.connect(this.mongodbUri)
             console.log("Connected to MongoDB")
+            Log.info("Connected to MongoDB")
         } catch (err) {
             console.log("Unable to connect to MongoDB. Please check the logs for more details")
             Log.error(err)
