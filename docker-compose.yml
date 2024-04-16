@@ -18,7 +18,7 @@ services:
         - PORT=${BACKEND_PORT:-8000}
     volumes:
       - ./backend:/usr/app/backend
-      - node_modules:/usr/app/backend/node_modules
+      - backend_node_modules:/usr/app/backend/node_modules
     command: > 
       bash -c "
         if [ '$APP_ENV' = 'development' ]; then
@@ -35,4 +35,4 @@ services:
 
 volumes:
   mongo_data: {}
-  node_modules: {}
+  backend_node_modules: {}
