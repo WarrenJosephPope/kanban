@@ -1,8 +1,13 @@
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
+import crypto from "crypto"
+
 import User from "../models/user.js"
-import { JWT_SECRET } from "../config.js"
+import ForgotPassword from "../models/forgotPassword.js"
+
 import Log from "../helpers/log.js"
+
+import { JWT_SECRET } from "../config.js"
 
 export default class AuthController {
     static hasKeys(obj) {
@@ -104,7 +109,25 @@ export default class AuthController {
     }
 
     static async forgotPassword(req, res) {
+        const body = req.body
 
+        if (!(body.email ?? false)) {
+            return res.status(401).json({ status: "Failed", error: { email: "Please fill the email field" } })
+        }
+
+        const checkUser = await User.findOne({ email: body.email })
+
+        if (!checkUser) return res.status(401).json({ status: "Failed", error: { email: "No user exists with this email in our system" } })
+
+        const token = crypto.randomBytes(20).toString('hex')
+
+        try {
+            await ForgotPassword.findOneAndUpdate({ email: body.email }, { token }, { upsert: true })
+            return res.status(200).json({ status: "Success", message: "An email has been sent to you containing information on how to reset your password" })
+        } catch (err) {
+            Log.error(err)
+            return res.status(500).json({ status: "Failed", message: "An error has occured" })
+        }
     }
 
     static async resetPassword(req, res) {
