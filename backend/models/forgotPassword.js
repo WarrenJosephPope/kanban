@@ -8,6 +8,10 @@ const ForgotPasswordSchema = mongoose.Schema({
     token: {
         type: String,
         required: true
+    },
+    updatedAt: {
+        type: Date,
+        default: new Date
     }
 })
 
