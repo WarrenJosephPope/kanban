@@ -12,6 +12,6 @@ export default class AuthRoutes {
             .post('/register', AuthController.register)
             .post('/logout', AuthController.logout)
             .post('/forgot-password', AuthController.forgotPassword)
-            .post('/reset-password', AuthController.resetPassword)
+            .post('/reset-password/:token', AuthController.resetPassword)
     }
 }
