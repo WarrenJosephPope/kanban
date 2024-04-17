@@ -27,9 +27,10 @@ services:
           npm start;
         fi
       "
-    environment:
-      - PORT=${BACKEND_PORT}
-      - MONGODB_URI=${MONGODB_URI}
+    ports:
+      - ${BACKEND_PORT:-8000}:${BACKEND_PORT:-8000}
+    env_file:
+      - .env
     depends_on:
       - mongo_db
 
