@@ -12,6 +12,7 @@ export default class Server {
         this.app = new App()
         this.app.init()
         this.app.listen(this.port)
+        this.app.route()
     }
 
     async connectMongoose() {
