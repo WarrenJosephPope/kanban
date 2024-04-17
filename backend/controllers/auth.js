@@ -122,7 +122,7 @@ export default class AuthController {
         const token = crypto.randomBytes(20).toString('hex')
 
         try {
-            await ForgotPassword.findOneAndUpdate({ email: body.email }, { token }, { upsert: true })
+            await ForgotPassword.findOneAndUpdate({ email: body.email }, { token, updatedAt: new Date() }, { upsert: true })
             return res.status(200).json({ status: "Success", message: "An email has been sent to you containing information on how to reset your password" })
         } catch (err) {
             Log.error(err)
@@ -131,6 +131,49 @@ export default class AuthController {
     }
 
     static async resetPassword(req, res) {
+        const body = req.body
+        const error = {}
 
+        if (!(body.email ?? false)) {
+            error.email = "Please fill the email field"
+        }
+
+        if (!(body.password ?? false)) {
+            error.password = "Please fill the password field"
+        }
+
+        if (!(body.confirmPassword ?? false)) {
+            error.confirmPassword = "Please fill the confirm password field"
+        }
+
+        if (AuthController.hasKeys(error)) return res.status(401).json({status: "Failed", error})
+
+        if (body.password.length < 8) {
+            error.password = "Password should be at least 8 characters long"
+        }
+
+        if (body.password !== body.confirmPassword) {
+            error.confirmPassword = "Passwords do not match"
+        }
+
+        if (AuthController.hasKeys(error)) return res.status(401).json({status: "Failed", error})
+
+        const token = req.params.token
+
+        const checkForgotPassword = await ForgotPassword.findOne({ email: body.email, token })
+
+        if (!checkForgotPassword) return res.status(401).json({ status: "Failed", error: { email: "Email does not match with the token" } })
+
+        if (Date.now() - checkForgotPassword.updatedAt.getTime() >= 3600000) return res.status(401).json({ status: "Failed", error: { email: "Token has expired. Please reset your password again" } })
+
+        try {
+            const hashedPassword = bcrypt.hashSync(body.password, 10)
+            await User.findOneAndUpdate({ email: body.email }, { password: hashedPassword })
+            await ForgotPassword.deleteMany({ email: body.email })
+            return res.status(200).json({ status: "Success", message: "Password reset successfully" })
+        } catch (err) { 
+            Log.error(err)
+            return res.status(500).json({ status: "Failed", message: "An error has occured" })
+        }
     }
 }
