@@ -7,7 +7,10 @@ import ForgotPassword from "../models/forgotPassword.js"
 
 import Log from "../helpers/log.js"
 
-import { JWT_SECRET } from "../config.js"
+import Mailer from "../helpers/mailer.js"
+import ResetPasswordTemplate from "../helpers/templates/resetPasswordTemplate.js"
+
+import { JWT_SECRET, RESET_PASSWORD_LINK } from "../config.js"
 
 export default class AuthController {
     static hasKeys(obj) {
@@ -115,14 +118,23 @@ export default class AuthController {
             return res.status(401).json({ status: "Failed", error: { email: "Please fill the email field" } })
         }
 
-        const checkUser = await User.findOne({ email: body.email })
+        const user = await User.findOne({ email: body.email })
 
-        if (!checkUser) return res.status(401).json({ status: "Failed", error: { email: "No user exists with this email in our system" } })
+        if (!user) return res.status(401).json({ status: "Failed", error: { email: "No user exists with this email in our system" } })
 
         const token = crypto.randomBytes(20).toString('hex')
 
         try {
             await ForgotPassword.findOneAndUpdate({ email: body.email }, { token, updatedAt: new Date() }, { upsert: true })
+            
+            const link = `${RESET_PASSWORD_LINK}/${token}`
+            const resetPasswordTemplate = new ResetPasswordTemplate({ name: user.name, link })
+            const mailer = new Mailer()
+            await mailer.setSubject("Reset Your Password")
+                .setContent(resetPasswordTemplate.getContent())
+                .setTo(body.email)
+                .send()
+
             return res.status(200).json({ status: "Success", message: "An email has been sent to you containing information on how to reset your password" })
         } catch (err) {
             Log.error(err)
