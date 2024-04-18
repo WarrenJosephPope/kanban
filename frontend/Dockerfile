@@ -1,5 +1,6 @@
 FROM node:alpine
 
+ARG PORT
 RUN apk update && apk add bash
 
 WORKDIR /usr/app/frontend
