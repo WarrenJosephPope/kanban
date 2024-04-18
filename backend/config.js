@@ -2,6 +2,9 @@ import dotenv from "dotenv"
 
 dotenv.config()
 
+export const BASE_URL = process.env.BACKEND_BASE_URL ?? "http://localhost:8000"
+export const RESET_PASSWORD_LINK = process.env.RESET_PASSWORD_LINK ?? "http://localhost:8000/reset-password"
+
 export const PORT = process.env.BACKEND_PORT ?? 8000
 export const MONGODB_URI = process.env.MONGODB_URI ?? ""
 export const LOG_PATH = process.env.LOG_PATH ?? "logs/"
