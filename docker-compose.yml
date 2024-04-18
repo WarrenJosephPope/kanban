@@ -30,10 +30,37 @@ services:
     ports:
       - ${BACKEND_PORT:-8000}:${BACKEND_PORT:-8000}
     env_file:
-      - .env
+      - ./backend/.env
     depends_on:
       - mongo_db
+
+  # frontend:
+  #   container_name: kanban_frontend
+  #   restart: "unless-stopped"
+  #   build:
+  #     context: "./frontend"
+  #     dockerfile: Dockerfile
+  #     args:
+  #       - PORT:${FRONTEND_PORT:-3000}
+  #   volumes:
+  #     - ./frontend:/usr/app/frontend
+  #     - frontend_node_modules:/usr/app/frontend_node_modules
+  #   command: >
+  #     bash -c "
+  #       if [ '$APP_ENV' = 'development' ]; then
+  #         npm run dev;
+  #       else
+  #         npm start;
+  #       fi
+  #     "
+  #   ports:
+  #     - ${FRONTEND_PORT:-3000}:${FRONTEND_PORT:-3000} 
+  #   env_file:
+  #     - ./frontend/.env
+  #   depends_on:
+  #     - backend
 
 volumes:
   mongo_data: {}
   backend_node_modules: {}
+  frontend_node_modules: {}
